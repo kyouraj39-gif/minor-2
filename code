@@ -1,0 +1,67 @@
+import sys
+from PIL import Image
+
+# 1. DEFINE THE ASCII CHARACTERS
+# This string goes from darkest to lightest.
+# You can swap the order if your terminal background is white.
+ASCII_CHARS = ["@", "#", "S", "%", "?", "*", "+", ";", ":", ",", "."]
+
+def resize_image(image, new_width=100):
+    """
+    Resizes the image to a new width while maintaining aspect ratio.
+    """
+    width, height = image.size
+    ratio = height / width
+    # 0.55 is used to correct the aspect ratio because terminal characters 
+    # are usually taller than they are wide.
+    new_height = int(new_width * ratio * 0.55)
+    resized_image = image.resize((new_width, new_height))
+    return resized_image
+
+def grayify(image):
+    """
+    Converts the image to grayscale using the 'L' mode.
+    """
+    return image.convert("L")
+
+def pixels_to_ascii(image):
+    """
+    Maps each pixel to an ascii character based on its intensity.
+    """
+    pixels = image.getdata()
+    characters = ""
+    
+    # LOOP 1: Iterate through every pixel in the image data
+    for pixel in pixels:
+        # CONDITIONAL/LOGIC: Map pixel brightness (0-255) to our list of chars (0-10)
+        # We divide by 25 to scale 0-255 down to 0-10 index.
+        characters += ASCII_CHARS[pixel // 25]
+        
+    return characters
+
+def main(image_path):
+    try:
+        # Open the image file
+        image = Image.open(image_path)
+    except Exception as e:
+        print(e)
+        return
+
+    # Process the image function by function
+    new_image_data = pixels_to_ascii(grayify(resize_image(image)))
+    
+    # Format the string into lines to form the image
+    pixel_count = len(new_image_data)
+    ascii_image = "\n".join([new_image_data[index:(index+100)] for index in range(0, pixel_count, 100)])
+    
+    # Print the result
+    print(ascii_image)
+    
+    # Save the result to a text file
+    with open("ascii_art.txt", "w") as f:
+        f.write(ascii_image)
+
+# Run the program
+# Make sure your image file is named 'mbs.webp' or update the name below
+if __name__ == "__main__":
+    main("mbs.webp")
